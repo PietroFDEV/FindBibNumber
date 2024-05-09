@@ -15,7 +15,7 @@ def preprocess_image(image_path):
     return img_array
 
 # Path to new image
-image_path = 'path_to_new_image.jpg'
+image_path = 'num.jpg'
 
 # Preprocess the image
 new_image = preprocess_image(image_path)

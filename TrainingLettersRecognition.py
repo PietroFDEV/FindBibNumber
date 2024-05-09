@@ -8,14 +8,27 @@ import numpy as np
 dataset1 = load_dataset("tanganke/emnist_letters")
 dataset2 = load_dataset("pittawat/letter_recognition")
 
-# Assuming the datasets are loaded successfully and have a similar structure
-# This is pseudo code and will need adjustments based on actual dataset structure.
-
 # Preprocess function for dataset
 def preprocess_images(dataset, label_offset=0):
-    images = np.array([item['image'].numpy() for item in dataset['train']])
-    labels = np.array([item['label'] + label_offset for item in dataset['train']])
-    images = images / 255.0  # Normalize to [0, 1]
+    images = []
+    labels = []
+    
+    # Iterate over each item in the dataset's training split
+    for item in dataset['train']:
+        # Since the image is already a PIL Image object, just convert it to grayscale
+        image = item['image'].convert('L')
+        image_array = np.array(image)
+
+        # Append to lists
+        images.append(image_array)
+        labels.append(item['label'] + label_offset)
+    
+    images = np.array(images, dtype=np.float32) / 255.0  # Normalize to [0, 1]
+    labels = np.array(labels, dtype=np.int32)
+
+    # Reshape images to include the channel dimension (28, 28, 1)
+    images = np.expand_dims(images, axis=-1)
+    
     return images, labels
 
 # Preprocess both datasets
