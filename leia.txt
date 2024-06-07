@@ -1,0 +1,31 @@
+Como utilizar o treinamento
+
+Requerimentos de instalação: 
+- Python3.11
+- Nvidia Cuda Toolkit 12.1 (tem que ser essa versão) https://developer.nvidia.com/cuda-12-1-0-download-archive
+- Dataset no formato yolov7 (train/images/ - train/labels/) - (test/images/ - test/labels/) - (valid/images/ - valid/labels/)
+
+Comandos de imports:
+- cd yolov7
+- pip install numpy==1.23.5
+- pip install opencv-python Pillow pytesseract seaborn setuptools requests tqdm ppyaml scipy protobuf<4.21.3 tensorboard ipython psutil thop
+- pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+Caminho do dataset:
+- O dataset se encontra em yolov7/data/(test train valid) e o arquivo de configuração se encontra em  yolov7/data/coco.yaml
+- Para trocar para o dataset de teste (50 imagens) é só alterar o caminho das 3 primeiras linhas do arquivo para:
+    train: ./data/train_test/images
+    val: ./data/valid_test/images
+    test: ./data/test_test/images
+- E para o dataset completo (7825 imagens):
+    train: ./data/train/images
+    val: ./data/valid/images
+    test: ./data/test/images
+- É recomendado treinar uma vez com o dataset de teste para verificar se não haverá erros, pois o treinamento com o dataset completo demora muitas horas.
+
+Quantidade de epochs que o treinamento vai usar:
+- As epochs definem quantas vezes o treinamento vai ler o dataset, o padrão do yolov7 é 300, porém demoraria muito tempo, então para teste, coloque um valor baixo como 30
+- A quantidade de epochs pode ser setada no código, adicionando "--epochs 30" no final do comando de treinamento, caso não for setada, será o padrão (300)
+
+Comando de treinamento:
+- python train.py --workers 8 --device 0 --batch-size 16 --data data/coco.yaml --img 640 640 --cfg cfg/training/yolov7.yaml --weights 'yolov7.pt' --name yolov7-custom --hyp data/hyp.scratch.custom.yaml
