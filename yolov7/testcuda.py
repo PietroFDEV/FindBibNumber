@@ -1,7 +1,17 @@
 import torch
-import torchvision
 
-print(torch.__version__)
-print(torchvision.__version__)
-print(torch.cuda.is_available())
-print(torch.version.cuda)
+# setting device on GPU if available, else CPU
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('Using device:', device)
+print()
+
+print(torch.backends.mps.is_available(), torch.backends.mps.is_built())
+
+print()
+
+#Additional Info when using cuda
+if device.type == 'cuda':
+    print(torch.cuda.get_device_name(0))
+    print('Memory Usage:')
+    print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
+    print('Cached:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
