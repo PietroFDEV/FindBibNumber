@@ -2,7 +2,7 @@ Como utilizar o treinamento
 
 Requerimentos de instalação: 
 - Python3.11
-- Nvidia Cuda Toolkit 12.1 (tem que ser essa versão) https://developer.nvidia.com/cuda-11-8-0-download-archive
+- Nvidia Cuda Toolkit 11.8 (tem que ser essa versão) https://developer.nvidia.com/cuda-11-8-0-download-archive
 - Dataset no formato yolov7 (train/images/ - train/labels/) - (test/images/ - test/labels/) - (valid/images/ - valid/labels/)
 
 Comandos de imports:
