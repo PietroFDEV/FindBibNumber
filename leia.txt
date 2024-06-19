@@ -28,12 +28,16 @@ Quantidade de epochs que o treinamento vai usar:
 - A quantidade de epochs pode ser setada no código, adicionando "--epochs 10" no final do comando de treinamento, caso não for setada, será o padrão (300)
 
 Comando de treinamento:
-- python train.py --workers 8 --device 0 --batch-size 16 --data data/coco.yaml --img 640 640 --cfg cfg/training/yolov7.yaml --weights 'yolov7.pt' --name yolov7-custom --hyp data/hyp.scratch.custom.yaml
+- python yolov7/train.py --workers 8 --device 0 --batch-size 16 --data yolov7/data/coco.yaml --img 640 640 --cfg yolov7/cfg/training/yolov7.yaml --weights yolov7/yolov7.pt --name yolov7-custom --hyp yolov7/data/hyp.scratch.custom.yaml
 
-Após o treinamento, pegue o best.pt que foi criado na pasta yolov7/runs/train/yolov7-custom/weights/best.pt e copie para a pasta yolov7/
-Selecione uma imagem para testar a detecção do modelo, e deixe na pasta yolov7/ também
+Escolha imagens para testar, e coloque-as em photos/
 
 Para rodar o comando de detecção:
-- python detect.py --weights best.pt --conf 0.1 --img-size 640 --source image.jpg --device 0
+- python yolov7/detect.py --weights yolov7/runs/train/yolov7-custom/weights/best.pt --conf 0.12 --img-size 640 --source photos/image_name.png --device cpu --save-txt --no-trace
 
 E a imagem com detecção irá aparecer em runs/detect
+Os números detectados serão salvos em number-images.csv, e serão utilizados pelo script search.py
+
+Comando de pesquisa:
+- python search.py
+(e depois digitar um número de corrida para procurar)

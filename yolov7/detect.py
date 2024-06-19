@@ -1,19 +1,20 @@
 import argparse
 import time
 from pathlib import Path
-
+import numpy
+import csv
 import cv2
 import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
-
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:/Program Files/Tesseract-OCR/tesseract.exe'
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams, LoadImages
 from utils.general import check_img_size, check_requirements, check_imshow, non_max_suppression, apply_classifier, \
     scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
-
 
 def detect(save_img=False):
     source, weights, view_img, save_txt, imgsz, trace = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace
@@ -98,6 +99,7 @@ def detect(save_img=False):
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
+
             if webcam:  # batch_size >= 1
                 p, s, im0, frame = path[i], '%g: ' % i, im0s[i].copy(), dataset.count
             else:
@@ -126,7 +128,49 @@ def detect(save_img=False):
 
                     if save_img or view_img:  # Add bbox to image
                         label = f'{names[int(cls)]} {conf:.2f}'
-                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=1)
+                        #color=colors[int(cls)]
+                        color=[239, 168, 234]
+                        plot_one_box(xyxy, im0, label=label, color=color, line_thickness=1)
+
+                        # Extract ROI and apply Tesseract OCR
+                        x1, y1, x2, y2 = map(int, xyxy)
+                        roi = im0[y1:y2, x1:x2]
+                        roi_height, roi_width, channels = roi.shape
+                        roi_size = roi_height * roi_width
+                        img = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+                        if roi_size <= 5000 :
+                            kernel = numpy.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+                            img = cv2.filter2D(img, -1, kernel)
+                            kernel = numpy.ones((1, 1), numpy.uint8)
+                            img = cv2.dilate(img, kernel, iterations=1)
+                            img = cv2.erode(img, kernel, iterations=1)
+                            
+                            
+                        if roi_size > 5000 :
+                            kernel = numpy.ones((1, 1), numpy.uint8)
+                            img = cv2.dilate(img, kernel, iterations=1)
+                            img = cv2.erode(img, kernel, iterations=1)
+                        
+                        cv2.threshold(cv2.GaussianBlur(img, (5, 5), 0), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+                        maior = ""
+                        runs = [11,4,5,6,7,8,9,10,12]
+                        for i in runs:
+                            config = f'--oem 3 --psm {i} digits' 
+                            text = pytesseract.image_to_string(img, config=config)  # psm 6 for single block of text / 8 for single word / 9 for circular
+                            #print(f"{i}: {text}")
+                            if len(text) > len(maior):
+                                if not (" " in text) and not ("." in text) and not ("-" in text):
+                                    maior = text.strip()
+
+                        number_images_csv = '../number-images.csv'
+
+                        new_line = [maior, p.name]
+
+                        with open(number_images_csv, mode='a', newline='') as file:
+                            writer = csv.writer(file)
+                            writer.writerow(new_line)
+
+                        print(f'OCR Result: {maior}')
 
             # Print time (inference + NMS)
             print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')
@@ -158,7 +202,7 @@ def detect(save_img=False):
 
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
-        #print(f"Results saved to {save_dir}{s}")
+        print(f"Results saved to {save_dir}{s}")
 
     print(f'Done. ({time.time() - t0:.3f}s)')
 
@@ -185,7 +229,7 @@ if __name__ == '__main__':
     parser.add_argument('--no-trace', action='store_true', help='don`t trace model')
     opt = parser.parse_args()
     print(opt)
-    #check_requirements(exclude=('pycocotools', 'thop'))
+    # check_requirements(exclude=('pycocotools', 'thop'))
 
     with torch.no_grad():
         if opt.update:  # update all models (to fix SourceChangeWarning)
