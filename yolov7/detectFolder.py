@@ -26,7 +26,7 @@ def process_images(image_folder, script_path, base_params):
         command.extend(["--source", full_source])
 
         print(f"Executing: {' '.join(command)}")  # Show the command being run
-        #run(command)
+        run(command)
 
 # Example usage
 image_folder = "../photos/"
