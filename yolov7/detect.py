@@ -152,14 +152,18 @@ def detect(save_img=False):
                             img = cv2.erode(img, kernel, iterations=1)
                         
                         cv2.threshold(cv2.GaussianBlur(img, (5, 5), 0), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+                        def is_single_line(s: str) -> bool:
+                            return len(s.splitlines()) == 1
+
                         maior = ""
                         runs = [11,4,5,6,7,8,9,10,12]
                         for i in runs:
                             config = f'--oem 3 --psm {i} digits' 
                             text = pytesseract.image_to_string(img, config=config)  # psm 6 for single block of text / 8 for single word / 9 for circular
-                            #print(f"{i}: {text}")
+                            # print(f"{i}: {text}")
                             if len(text) > len(maior):
-                                if not (" " in text) and not ("." in text) and not ("-" in text):
+                                if not (" " in text) and not ("." in text) and not ("-" in text) and is_single_line(text) is True:
                                     maior = text.strip()
 
                         number_images_csv = '../number-images.csv'
